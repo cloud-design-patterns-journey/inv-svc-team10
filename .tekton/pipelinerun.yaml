@@ -102,22 +102,6 @@ spec:
             workspace: shared-data
           - name: dockerconfig
             workspace: registry-config
-      - name: img-scan
-        params:
-          - name: IMAGE_PATH
-            value: >-
-              $(params.img-server)/$(params.img-namespace)/$(params.app-name):$(tasks.fetch-repository.results.commit)
-          - name: ARGS
-            value:
-              - "$(params.img-scan-args[*])"
-        runAfter:
-          - img-build
-        taskRef:
-          kind: Task
-          name: trivy-scanner
-        workspaces:
-          - name: manifest-dir
-            workspace: manifest-dir
       - name: deploy
         params:
           - name: app-name
@@ -127,7 +111,7 @@ spec:
           - name: image
             value: $(params.img-server)/$(params.img-namespace)/$(params.app-name):$(tasks.fetch-repository.results.commit)
         runAfter:
-          - img-scan
+          - img-build
         taskRef:
           kind: Task
           name: deploy
