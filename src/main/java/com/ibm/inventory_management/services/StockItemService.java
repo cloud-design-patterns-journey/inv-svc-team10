@@ -1,43 +1,29 @@
 package com.ibm.inventory_management.services;
 
-import static java.util.Arrays.asList;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import com.ibm.inventory_management.models.StockItem;
+import com.ibm.inventory_management.repositories.StockItemRepository;
 
 @Service
 public class StockItemService implements StockItemApi {
-    static int id = 0;
-    static List<StockItem> stockItems = new ArrayList<>(asList(
-            new StockItem(++id + "")
-                    .withName("Item 1")
-                    .withStock(100)
-                    .withPrice(10.5)
-                    .withManufacturer("Sony"),
-            new StockItem(++id + "")
-                    .withName("Item 2")
-                    .withStock(150)
-                    .withPrice(100.5)
-                    .withManufacturer("Insignia"),
-            new StockItem(++id + "")
-                    .withName("Item 3")
-                    .withStock(10)
-                    .withPrice(1000.0)
-                    .withManufacturer("Panasonic")));
+    private final StockItemRepository repository;
+
+    public StockItemService(StockItemRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public List<StockItem> listStockItems() {
-        return this.stockItems;
+        return this.repository.findAll();
     }
 
     @Override
     public void addStockItem(String name, String manufacturer, double price, int stock) {
-        this.stockItems.add(new StockItem(++id + "")
+        this.repository.save(new StockItem(UUID.randomUUID().toString())
                 .withName(name)
                 .withStock(stock)
                 .withPrice(price)
@@ -46,23 +32,17 @@ public class StockItemService implements StockItemApi {
 
     @Override
     public void updateStockItem(String id, String name, String manufacturer, double price, int stock) {
-        StockItem itemToUpdate = this.stockItems.stream().filter(stockItem -> stockItem.getId().equals(id)).findFirst()
-                .orElse(null);
-
-        if (itemToUpdate == null) {
-            System.out.println("Item not found");
-            return;
-        }
-
-        itemToUpdate.setName(name != null ? name : itemToUpdate.getName());
-        itemToUpdate.setManufacturer(manufacturer != null ? manufacturer : itemToUpdate.getManufacturer());
-        itemToUpdate.setPrice(Double.valueOf(price) != null ? price : itemToUpdate.getPrice());
-        itemToUpdate.setStock(Integer.valueOf(stock) != null ? stock : itemToUpdate.getStock());
+        this.repository.findById(id).ifPresentOrElse(itemToUpdate -> {
+            itemToUpdate.setName(name);
+            itemToUpdate.setManufacturer(manufacturer);
+            itemToUpdate.setPrice(price);
+            itemToUpdate.setStock(stock);
+            this.repository.save(itemToUpdate);
+        }, () -> System.out.println("Item not found"));
     }
 
     @Override
     public void deleteStockItem(String id) {
-        this.stockItems = this.stockItems.stream().filter((stockItem) -> !stockItem.getId().equals(id))
-                .collect(Collectors.toList());
+        this.repository.deleteById(id);
     }
 }
