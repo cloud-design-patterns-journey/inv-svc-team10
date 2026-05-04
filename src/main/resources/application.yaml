@@ -5,3 +5,32 @@ openapi:
   id: "${API_ID:hello-watson}"
   title: "${API_TITLE:Hello Watson}"
   description: "${API_DESCRIPTION:Simple Hello World API}"
+
+spring:
+  rabbitmq:
+    host: "${RABBITMQ_HOST:rabbitmq}"
+    port: "${RABBITMQ_PORT:5672}"
+    username: "${RABBITMQ_USERNAME:guest}"
+    password: "${RABBITMQ_PASSWORD:guest}"
+    listener:
+      simple:
+        acknowledge-mode: auto
+        prefetch: 10
+        concurrency: 2
+        max-concurrency: 8
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 2000ms
+          multiplier: 2
+          max-interval: 10000ms
+
+inventory:
+  messaging:
+    exchange: "stock.exchange"
+    routing-key: "stock.event"
+    queue: "stock.queue"
+    dlx: "stock.dlx"
+    dlq: "stock.dlq"
+    dlq-routing-key: "stock.event.dead"
