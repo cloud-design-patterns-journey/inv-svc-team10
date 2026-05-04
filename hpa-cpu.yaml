@@ -1,0 +1,22 @@
+# CPU-based Horizontal Pod Autoscaler
+# Update `scaleTargetRef.name` to match your Deployment name
+# Update `metadata.namespace` if your Deployment runs in a non-default namespace
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: inv-svc-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: inv-svc
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
